@@ -20,15 +20,32 @@ public class PlayerMovement : NetworkBehaviour
     private Rigidbody2D rb;
     private bool isGrounded;
 
+    private NetworkVariable<bool> netIsRunning = new NetworkVariable<bool>(
+       false, NetworkVariableReadPermission.Everyone, NetworkVariableWritePermission.Owner);
+
+    private NetworkVariable<bool> netIsMidair = new NetworkVariable<bool>(
+        false, NetworkVariableReadPermission.Everyone, NetworkVariableWritePermission.Owner);
+
     private void Awake()
     {
         rb = GetComponent<Rigidbody2D>();
         rb.constraints = RigidbodyConstraints2D.FreezeRotation; // блокировка Z
     }
 
+    public override void OnNetworkSpawn()
+    {
+        if (!IsOwner)
+        {
+            // Подписка на изменения NetworkVariable, чтобы обновлять анимацию у других клиентов
+            netIsRunning.OnValueChanged += OnIsRunningChanged;
+            netIsMidair.OnValueChanged += OnIsMidairChanged;
+        }
+    }
+
     private void Update()
     {
         if (!IsOwner) return;
+        SyncAnimationVariables();
         // Горизонтальное движение
         float horizontalInput = Input.GetAxisRaw("Horizontal");
         rb.linearVelocity = new Vector2(horizontalInput * speed, rb.linearVelocity.y);
@@ -47,6 +64,29 @@ public class PlayerMovement : NetworkBehaviour
         // Flip персонажа
         if (horizontalInput > 0.01f) transform.localScale = Vector3.one;
         else if (horizontalInput < -0.01f) transform.localScale = new Vector3(-1, 1, 1);
+    }
+
+    private void SyncAnimationVariables()
+    {
+        // Только владелец пишет в NetworkVariable
+        netIsRunning.Value = Mathf.Abs(rb.linearVelocity.x) > 0.01f;
+        netIsMidair.Value = !isGrounded;
+
+        // Локально анимация для владельца
+        animator.SetBool(moveHash, netIsRunning.Value);
+        animator.SetBool(midairHash, netIsMidair.Value);
+    }
+
+    private void OnIsRunningChanged(bool previousValue, bool newValue)
+    {
+        if (!IsOwner)
+            animator.SetBool(moveHash, newValue);
+    }
+
+    private void OnIsMidairChanged(bool previousValue, bool newValue)
+    {
+        if (!IsOwner)
+            animator.SetBool(midairHash, newValue);
     }
 
     private void OnDrawGizmosSelected()
