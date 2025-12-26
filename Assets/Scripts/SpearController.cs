@@ -1,68 +1,44 @@
-using Unity.Netcode;
 using UnityEngine;
 
-public class SpearController : NetworkBehaviour
+public class SpearController : MonoBehaviour
 {
     [SerializeField] private GameObject spearPrefab;
     [SerializeField] private Transform throwPoint;
     [SerializeField] private float throwForce = 20f;
 
-    // ТОЛЬКО сервер решает, есть ли копьё
-    private NetworkObject currentSpear;
+    private Spear currentSpear;
 
     private void Update()
     {
-        if (!IsOwner) return;
-
-        // ЛКМ — запрос на бросок
         if (Input.GetMouseButtonDown(0))
-        {
-            RequestThrowServerRpc();
-        }
+            Throw();
 
-        // ПКМ — возврат
         if (Input.GetMouseButtonDown(1))
-        {
-            RequestRecallServerRpc();
-        }
+            Recall();
     }
 
-    // ------------------------
-    // Запрос на бросок
-    // ------------------------
-    [ServerRpc]
-    private void RequestThrowServerRpc(ServerRpcParams rpcParams = default)
+    private void Throw()
     {
-        if (currentSpear != null) return; // ? защита от спама
+        if (currentSpear != null) return;
 
-        GameObject spearObj = Instantiate(spearPrefab, throwPoint.position, Quaternion.identity);
-        NetworkObject netObj = spearObj.GetComponent<NetworkObject>();
+        GameObject obj = Instantiate(spearPrefab, throwPoint.position, Quaternion.identity);
+        currentSpear = obj.GetComponent<Spear>();
 
-        netObj.Spawn();
+        // ВАЖНО: цель возврата задаётся сразу
+        currentSpear.Init(transform);
 
-        Spear spear = spearObj.GetComponent<Spear>();
-        spear.Throw(GetThrowDirection() * throwForce);
-
-        currentSpear = netObj;
+        currentSpear.Throw(GetThrowDirection() * throwForce);
     }
 
-    // ------------------------
-    // Запрос на возврат
-    // ------------------------
-    [ServerRpc]
-    private void RequestRecallServerRpc()
+    private void Recall()
     {
         if (currentSpear == null) return;
+        if (currentSpear.IsFlying) return;
 
-        Spear spear = currentSpear.GetComponent<Spear>();
-        spear.StartRecall(transform.position);
-
+        currentSpear.StartRecall();
         currentSpear = null;
     }
 
-    // ------------------------
-    // Направление броска
-    // ------------------------
     private Vector2 GetThrowDirection()
     {
         Vector3 mouse = Camera.main.ScreenToWorldPoint(Input.mousePosition);

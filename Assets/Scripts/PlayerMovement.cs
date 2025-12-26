@@ -1,16 +1,16 @@
-using Unity.Netcode;
+// PlayerMovement.cs
 using UnityEngine;
 
-public class PlayerMovement : NetworkBehaviour
+public class PlayerMovement : MonoBehaviour
 {
     [Header("Movement Settings")]
-    [SerializeField] private float speed = 5f;       // скорость движения
-    [SerializeField] private float jumpForce = 10f;  // сила прыжка
+    [SerializeField] private float speed = 5f;
+    [SerializeField] private float jumpForce = 10f;
 
     [Header("Ground Check")]
-    [SerializeField] private Transform groundCheck;   // точка под ногами
+    [SerializeField] private Transform groundCheck;
     [SerializeField] private float groundCheckRadius = 0.1f;
-    [SerializeField] private LayerMask groundLayer;   // Ground + SpearPlatform
+    [SerializeField] private LayerMask groundLayer;
 
     [Header("Anims")]
     [SerializeField] private Animator animator;
@@ -20,73 +20,33 @@ public class PlayerMovement : NetworkBehaviour
     private Rigidbody2D rb;
     private bool isGrounded;
 
-    private NetworkVariable<bool> netIsRunning = new NetworkVariable<bool>(
-       false, NetworkVariableReadPermission.Everyone, NetworkVariableWritePermission.Owner);
-
-    private NetworkVariable<bool> netIsMidair = new NetworkVariable<bool>(
-        false, NetworkVariableReadPermission.Everyone, NetworkVariableWritePermission.Owner);
-
     private void Awake()
     {
         rb = GetComponent<Rigidbody2D>();
-        rb.constraints = RigidbodyConstraints2D.FreezeRotation; // блокировка Z
-    }
-
-    public override void OnNetworkSpawn()
-    {
-        if (!IsOwner)
-        {
-            // Подписка на изменения NetworkVariable, чтобы обновлять анимацию у других клиентов
-            netIsRunning.OnValueChanged += OnIsRunningChanged;
-            netIsMidair.OnValueChanged += OnIsMidairChanged;
-        }
+        rb.constraints = RigidbodyConstraints2D.FreezeRotation;
     }
 
     private void Update()
     {
-        if (!IsOwner) return;
-        SyncAnimationVariables();
-        // Горизонтальное движение
         float horizontalInput = Input.GetAxisRaw("Horizontal");
-        rb.linearVelocity = new Vector2(horizontalInput * speed, rb.linearVelocity.y);
-        animator.SetBool(moveHash, horizontalInput != 0); 
 
-        // Проверка на землю/копья
-        isGrounded = Physics2D.OverlapCircle(groundCheck.position, groundCheckRadius, groundLayer);
+        rb.linearVelocity = new Vector2(horizontalInput * speed, rb.linearVelocity.y);
+        animator.SetBool(moveHash, horizontalInput != 0);
+
+        isGrounded = Physics2D.OverlapCircle(
+            groundCheck.position,
+            groundCheckRadius,
+            groundLayer
+        );
         animator.SetBool(midairHash, !isGrounded);
 
-        // Прыжок
         if (Input.GetKeyDown(KeyCode.Space) && isGrounded)
-        {
             rb.linearVelocity = new Vector2(rb.linearVelocity.x, jumpForce);
-        }
 
-        // Flip персонажа
-        if (horizontalInput > 0.01f) transform.localScale = Vector3.one;
-        else if (horizontalInput < -0.01f) transform.localScale = new Vector3(-1, 1, 1);
-    }
-
-    private void SyncAnimationVariables()
-    {
-        // Только владелец пишет в NetworkVariable
-        netIsRunning.Value = Mathf.Abs(rb.linearVelocity.x) > 0.01f;
-        netIsMidair.Value = !isGrounded;
-
-        // Локально анимация для владельца
-        animator.SetBool(moveHash, netIsRunning.Value);
-        animator.SetBool(midairHash, netIsMidair.Value);
-    }
-
-    private void OnIsRunningChanged(bool previousValue, bool newValue)
-    {
-        if (!IsOwner)
-            animator.SetBool(moveHash, newValue);
-    }
-
-    private void OnIsMidairChanged(bool previousValue, bool newValue)
-    {
-        if (!IsOwner)
-            animator.SetBool(midairHash, newValue);
+        if (horizontalInput > 0.01f)
+            transform.localScale = Vector3.one;
+        else if (horizontalInput < -0.01f)
+            transform.localScale = new Vector3(-1, 1, 1);
     }
 
     private void OnDrawGizmosSelected()
