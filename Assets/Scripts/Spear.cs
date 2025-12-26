@@ -5,6 +5,8 @@ using System.Collections;
 [RequireComponent(typeof(Collider2D))]
 public class Spear : MonoBehaviour
 {
+    [SerializeField] ShakeCamera _shakeCamera;
+
     [Header("Stick")]
     [SerializeField] private float maxStickAngle = 45f;
     [SerializeField] private LayerMask wallLayer;
@@ -31,6 +33,7 @@ public class Spear : MonoBehaviour
     {
         rb = GetComponent<Rigidbody2D>();
         col = GetComponent<Collider2D>();
+        _shakeCamera = Camera.main.GetComponent<ShakeCamera>();
 
         rb.bodyType = RigidbodyType2D.Kinematic;
         rb.gravityScale = 1f;
@@ -93,6 +96,9 @@ public class Spear : MonoBehaviour
     private void Stick()
     {
         isStuck = true;
+
+        _shakeCamera.ShakeeCamera(0.5f, 0.05f, true, true);
+        AudioManager.Instance.PlaySFXArray(AudioManager.Instance.spearImpacts);
 
         rb.linearVelocity = Vector2.zero;
         rb.angularVelocity = 0f;
