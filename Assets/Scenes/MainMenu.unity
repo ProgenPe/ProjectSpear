@@ -3012,13 +3012,13 @@ PrefabInstance:
       value: 
       objectReference: {fileID: 478432859}
     - target: {fileID: 1756388504401925970, guid: e5b012280620b1c41bca5b28a8aa3c69, type: 3}
-      propertyPath: mainMenuMusic
-      value: 
-      objectReference: {fileID: 8300000, guid: 0932a06e3095feb438278fb4cdbeb26e, type: 3}
+      propertyPath: isInMainMenu
+      value: 1
+      objectReference: {fileID: 0}
     - target: {fileID: 1756388504401925970, guid: e5b012280620b1c41bca5b28a8aa3c69, type: 3}
       propertyPath: 'bgMusic.Array.data[0]'
       value: 
-      objectReference: {fileID: 8300000, guid: 64df4ef64b1d6da43b7fb8594cebdeff, type: 3}
+      objectReference: {fileID: 8300000, guid: 0932a06e3095feb438278fb4cdbeb26e, type: 3}
     - target: {fileID: 4191764906967970089, guid: e5b012280620b1c41bca5b28a8aa3c69, type: 3}
       propertyPath: m_Name
       value: AudioManager

@@ -182,7 +182,10 @@ MonoBehaviour:
   SFXSlider: {fileID: 0}
   isInMainMenu: 1
   bgMusic:
-  - {fileID: 8300000, guid: 0932a06e3095feb438278fb4cdbeb26e, type: 3}
+  - {fileID: 8300000, guid: 64df4ef64b1d6da43b7fb8594cebdeff, type: 3}
+  mainMenuMusic: {fileID: 8300000, guid: 0932a06e3095feb438278fb4cdbeb26e, type: 3}
+  footsteps: []
+  spearImpacts: []
 --- !u!1 &8165209633946676288
 GameObject:
   m_ObjectHideFlags: 0

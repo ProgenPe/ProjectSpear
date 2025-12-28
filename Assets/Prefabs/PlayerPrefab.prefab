@@ -147,7 +147,7 @@ Rigidbody2D:
   m_Mass: 1
   m_LinearDamping: 0
   m_AngularDamping: 0
-  m_GravityScale: 1
+  m_GravityScale: 2
   m_Material: {fileID: 6200000, guid: ab5f4b121c9d8284583c166bee1983d6, type: 2}
   m_IncludeLayers:
     serializedVersion: 2
@@ -242,7 +242,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 4875c52df2b3e6b47b5ba8e6a1cb9cf3, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::SpearController
-  ShowTopMostFoldoutHeaderGroup: 1
   spearPrefab: {fileID: 1070343989290896851, guid: 6971193ee9e84304fa1256afe74835d7, type: 3}
   throwPoint: {fileID: 7775172565326757112}
   throwForce: 15
@@ -258,9 +257,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: b192244f050177d44ad6b5a54a791c48, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::PlayerMovement
-  ShowTopMostFoldoutHeaderGroup: 1
   speed: 10
-  jumpForce: 5
+  jumpForce: 9
   groundCheck: {fileID: 4890949490510520523}
   groundCheckRadius: 0.1
   groundLayer:
