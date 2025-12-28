@@ -42,6 +42,9 @@ TagManager:
   - name: Background
     uniqueID: 616656527
     locked: 0
+  - name: Env
+    uniqueID: 2966688715
+    locked: 0
   - name: Default
     uniqueID: 0
     locked: 0
@@ -50,6 +53,9 @@ TagManager:
     locked: 0
   - name: Someenv
     uniqueID: 1300356031
+    locked: 0
+  - name: New Layer 5
+    uniqueID: 4255119605
     locked: 0
   m_RenderingLayers:
   - Default

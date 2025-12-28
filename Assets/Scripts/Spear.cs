@@ -1,11 +1,12 @@
 using UnityEngine;
 using System.Collections;
+using UnityEngine.Tilemaps;
 
 [RequireComponent(typeof(Rigidbody2D))]
 [RequireComponent(typeof(Collider2D))]
 public class Spear : MonoBehaviour
 {
-    [SerializeField] ShakeCamera _shakeCamera;
+    [SerializeField] private ShakeCamera _shakeCamera;
 
     [Header("Stick")]
     [SerializeField] private float maxStickAngle = 45f;
@@ -18,6 +19,9 @@ public class Spear : MonoBehaviour
     [SerializeField] private float recallDelay = 0.4f;
     [SerializeField] private float recallSpeed = 25f;
 
+    [Header("Cracking")]
+    [SerializeField] private float crackRadius = 0.5f; // радиус разрушения в юнитах
+
     private Rigidbody2D rb;
     private Collider2D col;
 
@@ -25,7 +29,7 @@ public class Spear : MonoBehaviour
     private bool isRecalling;
     private bool isFlying;
 
-    private Transform recallTarget; // ← всегда задан
+    private Transform recallTarget;
 
     public bool IsFlying => isFlying;
 
@@ -39,7 +43,6 @@ public class Spear : MonoBehaviour
         rb.gravityScale = 1f;
     }
 
-    // ЦЕЛЬ ВОЗВРАТА ЗАДАЁТСЯ СРАЗУ
     public void Init(Transform owner)
     {
         recallTarget = owner;
@@ -91,6 +94,9 @@ public class Spear : MonoBehaviour
         }
 
         Stick();
+
+        // Запускаем разрушение всех тайлов в радиусе
+        TryCrackTiles(collision.contacts[0].point);
     }
 
     private void Stick()
@@ -147,12 +153,54 @@ public class Spear : MonoBehaviour
         Destroy(gameObject);
     }
 
+    public void ForceDrop()
+    {
+        if (!isStuck) return;
+
+        isStuck = false;
+
+        rb.bodyType = RigidbodyType2D.Dynamic;
+        rb.gravityScale = 1f;
+        col.enabled = true;
+
+        StartRecall();
+    }
+
     private void IgnorePlayersCollision(bool ignore)
     {
         foreach (var p in FindObjectsOfType<PlayerMovement>())
         {
             var pc = p.GetComponent<Collider2D>();
             if (pc) Physics2D.IgnoreCollision(col, pc, ignore);
+        }
+    }
+
+    private void TryCrackTiles(Vector2 point)
+    {
+        // Находим все WoodTileCracker в сцене
+        var crackers = FindObjectsOfType<WoodTileCracker>();
+        foreach (var cracker in crackers)
+        {
+            var tilemap = cracker.GetComponent<Tilemap>();
+            if (tilemap == null) continue;
+
+            // Определяем центр столкновения в клетках
+            Vector3Int centerCell = tilemap.WorldToCell(point);
+
+            int radiusCells = Mathf.CeilToInt(crackRadius / tilemap.layoutGrid.cellSize.x);
+
+            // Пробегаем все клетки в радиусе
+            for (int x = -radiusCells; x <= radiusCells; x++)
+            {
+                for (int y = -radiusCells; y <= radiusCells; y++)
+                {
+                    Vector3Int cell = centerCell + new Vector3Int(x, y, 0);
+                    if (!tilemap.HasTile(cell)) continue;
+
+                    // Вызываем анимацию трещины
+                    cracker.StartCrackingCell(cell, this);
+                }
+            }
         }
     }
 }

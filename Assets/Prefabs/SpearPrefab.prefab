@@ -76,6 +76,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: b47502b7d78905c4491718bea0730174, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Spear
+  tileProbeDistance: 0.2
+  _shakeCamera: {fileID: 0}
   maxStickAngle: 45
   wallLayer:
     serializedVersion: 2
